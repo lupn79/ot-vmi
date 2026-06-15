@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VMI 視覺動作統整 — 影片教學與互動練習</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --main: #6B3FA0;
+  --main-light: #F3EEFA;
+  --main-mid: #B08AD6;
+  --main-dark: #3A1A6A;
+  --main-deep: #522E88;
+  --red-light: #FCEAEA; --red-mid: #F0A0A0; --red-dark: #7A1F1F; --red: #B03030;
+  --amber-light: #FDF4E3; --amber-mid: #F0C070; --amber-dark: #5C3A08; --amber: #8A5A10;
+  --green-light: #E8F5EE; --green-mid: #80C99A; --green-dark: #1A4F2E; --green: #2A7A48;
+  --blue-light: #E3F0FA; --blue-mid: #6AAED6; --blue-dark: #0C3F6B; --blue: #1A6FAF;
+  --teal-light: #E2F5F3; --teal-mid: #5DBFB5; --teal-dark: #0A4A42; --teal: #1A7A6E;
+  --orange-light: #FDF0E8; --orange-mid: #F0A06A; --orange-dark: #7A3210; --orange: #C05010;
+  --gray-bg: #F5F4F8; --gray-border: #E0DDE6; --gray-text: #6B6878; --text: #1A1826; --white: #FFFFFF;
+  --radius: 10px; --radius-sm: 6px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: var(--gray-bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
+.site-header { background: linear-gradient(135deg, var(--main-dark) 0%, var(--main-deep) 100%); padding: 16px 24px; position: sticky; top: 0; z-index: 100; }
+.header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+.header-icon { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.header-text h1 { font-size: 17px; font-weight: 600; color: #fff; line-height: 1.3; }
+.header-text p { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+.main-nav { background: var(--white); border-bottom: 1px solid var(--gray-border); padding: 0 24px; overflow-x: auto; }
+.nav-inner { max-width: 900px; margin: 0 auto; display: flex; gap: 0; white-space: nowrap; }
+.nav-btn { padding: 14px 16px; border: none; background: none; font-size: 13px; color: var(--gray-text); cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; font-weight: 500; }
+.nav-btn.active { color: var(--main); border-bottom-color: var(--main); }
+.nav-btn:hover:not(.active) { color: var(--text); }
+.main-content { max-width: 900px; margin: 0 auto; padding: 24px 24px 60px; }
+.section-panel { display: none; }
+.section-panel.active { display: block; }
+.card { background: var(--white); border: 1px solid var(--gray-border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 16px; }
+.section-intro { font-size: 14px; color: var(--gray-text); margin-bottom: 20px; padding: 13px 17px; background: var(--main-light); border-radius: var(--radius-sm); border-left: 3px solid var(--main); line-height: 1.7; }
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; border-radius: var(--radius); overflow: hidden; background: #000; margin-bottom: 14px; }
+.video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+.video-note { font-size: 13px; color: var(--gray-text); margin-bottom: 16px; padding: 12px 16px; background: var(--main-light); border-radius: var(--radius-sm); border-left: 3px solid var(--main); }
+.start-btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); border: none; background: var(--main); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: background .15s; }
+.start-btn:hover { background: var(--main-dark); }
+.action-btns { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.action-btn { flex: 1; min-width: 130px; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--gray-border); background: var(--white); font-size: 13px; color: var(--text); cursor: pointer; font-weight: 500; }
+.action-btn:hover { background: var(--gray-bg); }
+/* Quiz */
+.progress-bar-bg { height: 4px; background: var(--gray-border); border-radius: 2px; margin-bottom: 18px; }
+.progress-bar-fill { height: 4px; background: var(--main); border-radius: 2px; transition: width .4s ease; }
+.q-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.q-num { font-size: 13px; color: var(--gray-text); }
+.q-badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; background: var(--main-light); color: var(--main-dark); font-weight: 500; }
+.q-text { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.q-scenario { background: var(--gray-bg); border-left: 3px solid var(--main); padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 14px; color: #444; line-height: 1.7; margin-bottom: 18px; }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+@media(max-width:480px){.options-grid{grid-template-columns:1fr;}}
+.opt-btn { background: var(--white); border: 1px solid var(--gray-border); border-radius: var(--radius-sm); padding: 13px 15px; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+.opt-btn:hover:not(:disabled) { background: var(--gray-bg); border-color: #C0BDC8; }
+.opt-btn .ol { font-size: 14px; font-weight: 600; color: var(--text); }
+.opt-btn.correct { border: 1.5px solid var(--green-mid); background: var(--green-light); }
+.opt-btn.correct .ol { color: var(--green-dark); }
+.opt-btn.wrong { border: 1.5px solid var(--red-mid); background: var(--red-light); }
+.opt-btn.wrong .ol { color: var(--red-dark); }
+.opt-btn.reveal { border: 1.5px solid var(--green-mid); background: var(--green-light); }
+.opt-btn.reveal .ol { color: var(--green-dark); }
+.opt-btn:disabled { cursor: default; }
+.feedback { border-radius: var(--radius-sm); padding: 13px 16px; margin-bottom: 14px; font-size: 14px; line-height: 1.65; display: none; }
+.feedback.correct { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-mid); }
+.feedback.wrong { background: var(--red-light); color: var(--red-dark); border: 1px solid var(--red-mid); }
+.feedback .fb-title { font-weight: 600; margin-bottom: 4px; }
+.quiz-next-btn { width: 100%; padding: 13px; border-radius: var(--radius-sm); border: 1px solid var(--gray-border); background: var(--white); font-size: 15px; color: var(--text); cursor: pointer; font-weight: 500; display: none; }
+.quiz-next-btn:hover { background: var(--gray-bg); }
+.score-screen { display: none; text-align: center; padding: 2rem 0; }
+.score-big { font-size: 56px; font-weight: 700; color: var(--main); line-height: 1; margin-bottom: 8px; }
+.score-label { font-size: 15px; color: var(--gray-text); margin-bottom: 1.5rem; }
+.score-breakdown { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; max-width: 340px; margin: 0 auto 1.5rem; }
+.sc-card { background: var(--gray-bg); border-radius: var(--radius-sm); padding: 14px 10px; }
+.sc-num { font-size: 24px; font-weight: 700; color: var(--text); }
+.sc-lbl { font-size: 12px; color: var(--gray-text); margin-top: 2px; }
+.restart-btn { padding: 12px 28px; border-radius: var(--radius-sm); border: 1px solid var(--gray-border); background: var(--white); font-size: 15px; color: var(--text); cursor: pointer; font-weight: 500; }
+/* Ref */
+.ref-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.ref-tab { padding: 7px 14px; border-radius: var(--radius-sm); border: 1px solid var(--gray-border); background: var(--white); font-size: 13px; color: var(--gray-text); cursor: pointer; font-weight: 500; transition: all .15s; }
+.ref-tab.active { background: var(--main-light); color: var(--main-dark); border-color: var(--main-mid); }
+.ref-panel { display: none; }
+.ref-panel.active { display: block; }
+.ref-h2 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-border); }
+.ref-h3 { font-size: 14px; font-weight: 600; color: var(--main-dark); margin: 16px 0 8px; }
+.ref-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+.ref-table th { text-align: left; padding: 9px 12px; background: var(--gray-bg); color: var(--gray-text); font-weight: 600; border-bottom: 1px solid var(--gray-border); font-size: 12px; }
+.ref-table td { padding: 9px 12px; border-bottom: 1px solid var(--gray-border); color: var(--text); vertical-align: top; line-height: 1.55; }
+.ref-table tr:last-child td { border-bottom: none; }
+.warn-box { background: var(--amber-light); border: 1px solid var(--amber-mid); border-radius: var(--radius-sm); padding: 12px 16px; margin-top: 12px; font-size: 13px; color: var(--amber-dark); font-weight: 500; line-height: 1.6; }
+.info-box { background: var(--main-light); border: 1px solid var(--main-mid); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px; font-size: 13px; color: var(--main-dark); line-height: 1.6; }
+.score-pill { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.pill-g { background: var(--green-light); color: var(--green-dark); }
+.pill-a { background: var(--amber-light); color: var(--amber-dark); }
+.pill-r { background: var(--red-light); color: var(--red-dark); }
+.pill-b { background: var(--blue-light); color: var(--blue-dark); }
+.pill-p { background: var(--main-light); color: var(--main-dark); }
+.subtest-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+@media(max-width:600px){.subtest-grid{grid-template-columns:1fr;}}
+.subtest-card { border-radius: var(--radius-sm); padding: 16px; border: 1px solid; }
+.subtest-card.vmi { background: var(--main-light); border-color: var(--main-mid); }
+.subtest-card.vmi .st-num { color: var(--main-dark); }
+.subtest-card.vp { background: var(--blue-light); border-color: var(--blue-mid); }
+.subtest-card.vp .st-num { color: var(--blue-dark); }
+.subtest-card.mc { background: var(--teal-light); border-color: var(--teal-mid); }
+.subtest-card.mc .st-num { color: var(--teal-dark); }
+.st-num { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+.st-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.st-time { font-size: 12px; color: var(--gray-text); margin-bottom: 4px; }
+.st-desc { font-size: 12px; line-height: 1.5; color: #555; }
+.site-footer { text-align: center; padding: 24px; font-size: 12px; color: var(--gray-text); border-top: 1px solid var(--gray-border); margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-icon">👁️</div>
+    <div class="header-text">
+      <h1>VMI 視覺動作統整 — 影片教學與互動練習</h1>
+      <p>臺北醫學大學附設醫院職能治療組 · 供 OT 學生與新進治療師使用</p>
+    </div>
+  </div>
+</header>
+
+<nav class="main-nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="switchMain('video',this)">影片教學</button>
+    <button class="nav-btn" onclick="switchMain('quiz',this)">互動練習</button>
+    <button class="nav-btn" onclick="switchMain('ref',this)">施測速查</button>
+  </div>
+</nav>
+
+<main class="main-content">
+
+  <!-- VIDEO -->
+  <section class="section-panel active" id="panel-video">
+    <p class="video-note">📹 請先完整觀看影片，了解 VMI 三個分測驗的施測方式與評分規則，再進行後續的互動練習。</p>
+    <div class="video-wrap">
+      <iframe src="https://www.youtube.com/embed/F359bBTCc-E" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+    </div>
+    <div class="card" style="text-align:center;padding:20px;">
+      <div style="font-size:15px;color:var(--gray-text);margin-bottom:14px;">影片看完了嗎？選擇接下來的練習：</div>
+      <button class="start-btn" onclick="switchMain('quiz',null)">開始互動練習 →</button>
+      <div class="action-btns">
+        <button class="action-btn" onclick="switchMain('ref',null)">📋 施測速查</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="section-panel" id="panel-quiz">
+    <p class="section-intro">涵蓋三個分測驗的施測規則、評分方式與結果解釋。答題後立即顯示詳細解說。</p>
+    <div class="card" id="nameCard" style="text-align:center;padding:24px;">
+      <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px;">請先輸入您的姓名</div>
+      <div style="font-size:13px;color:var(--gray-text);margin-bottom:16px;">完成練習後，成績會自動送出給老師</div>
+      <input id="studentName" type="text" placeholder="請輸入您的姓名" style="width:100%;max-width:280px;padding:10px 14px;border:1px solid var(--gray-border);border-radius:var(--radius-sm);font-size:15px;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;">
+        <button onclick="startQuiz('all')" style="padding:11px 20px;border-radius:var(--radius-sm);border:none;background:var(--main);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">全部練習（12題）</button>
+        <button onclick="startQuiz('admin')" style="padding:11px 20px;border-radius:var(--radius-sm);border:1px solid var(--gray-border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;">施測規則</button>
+        <button onclick="startQuiz('scoring')" style="padding:11px 20px;border-radius:var(--radius-sm);border:1px solid var(--gray-border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;">評分方式</button>
+        <button onclick="startQuiz('result')" style="padding:11px 20px;border-radius:var(--radius-sm);border:1px solid var(--gray-border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;">結果解釋</button>
+      </div>
+    </div>
+    <div class="card" id="quizCard" style="display:none;">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="qProgress" style="width:0%"></div></div>
+      <div class="q-meta">
+        <span class="q-num" id="qNum">題目 1 / 12</span>
+        <span class="q-badge" id="qBadge"></span>
+      </div>
+      <div class="q-text" id="qText"></div>
+      <div class="q-scenario" id="qScenario"></div>
+      <div class="options-grid" id="qOptions"></div>
+      <div class="feedback" id="qFeedback"><div class="fb-title" id="qFbTitle"></div><div id="qFbBody"></div></div>
+      <button class="quiz-next-btn" id="qNextBtn">下一題</button>
+    </div>
+    <div class="score-screen" id="scoreScreen">
+      <div class="score-big" id="scoreBig"></div>
+      <div class="score-label" id="scoreLabel"></div>
+      <div style="font-size:14px;color:var(--gray-text);margin-bottom:12px;" id="scoreNameLabel"></div>
+      <div class="score-breakdown">
+        <div class="sc-card"><div class="sc-num" id="scCorrect"></div><div class="sc-lbl">答對</div></div>
+        <div class="sc-card"><div class="sc-num" id="scWrong"></div><div class="sc-lbl">答錯</div></div>
+        <div class="sc-card"><div class="sc-num" id="scTotal"></div><div class="sc-lbl">總題數</div></div>
+      </div>
+      <div id="submitStatus" style="font-size:13px;margin-bottom:12px;color:var(--green);"></div>
+      <button class="restart-btn" onclick="restartQuiz()">重新練習</button>
+    </div>
+  </section>
+
+  <!-- REFERENCE -->
+  <section class="section-panel" id="panel-ref">
+    <div class="card">
+      <div class="ref-tabs">
+        <button class="ref-tab active" onclick="switchRef('overview',this)">概覽</button>
+        <button class="ref-tab" onclick="switchRef('vmi',this)">VMI 分測驗</button>
+        <button class="ref-tab" onclick="switchRef('vp',this)">視知覺分測驗</button>
+        <button class="ref-tab" onclick="switchRef('mc',this)">動作協調分測驗</button>
+        <button class="ref-tab" onclick="switchRef('score',this)">評分與結果</button>
+      </div>
+
+      <!-- Overview -->
+      <div class="ref-panel active" id="ref-overview">
+        <div class="ref-h2">Beery VMI 概覽</div>
+        <div class="info-box">✦ 全名：拜瑞-布坦尼卡視覺動作統整發展測驗（第六版）<br>✦ 適用年齡：2–100 歲（完整版）；2–7 歲（簡式題本）<br>✦ 目的：檢查視覺動作整合障礙、擬定介入計畫、評量教育成效、提供研究工具</div>
+        <div class="ref-h3">三個分測驗</div>
+        <div class="subtest-grid">
+          <div class="subtest-card vmi">
+            <div class="st-num">①</div>
+            <div class="st-name">VMI</div>
+            <div class="st-time">不計時</div>
+            <div class="st-desc">視覺動作統整；抄畫幾何圖形；最先施測</div>
+          </div>
+          <div class="subtest-card vp">
+            <div class="st-num">②</div>
+            <div class="st-name">視知覺</div>
+            <div class="st-time">3 分鐘</div>
+            <div class="st-desc">在 VMI 之後施測；第 7 題開始計時；1–3 題為指認部位</div>
+          </div>
+          <div class="subtest-card mc">
+            <div class="st-num">③</div>
+            <div class="st-name">動作協調</div>
+            <div class="st-time">5 分鐘</div>
+            <div class="st-desc">在 VMI 之後施測；第 7 題開始計時；不可以擦改</div>
+          </div>
+        </div>
+        <div class="ref-h3">施測對象與方式</div>
+        <table class="ref-table">
+          <thead><tr><th>年齡 / 年級</th><th>施測方式</th></tr></thead>
+          <tbody>
+            <tr><td>托兒所、幼稚園小中班</td><td>須個別施測</td></tr>
+            <tr><td>幼稚園大班</td><td>可團體施測（以 6 人為一組更適宜）</td></tr>
+            <tr><td>一年級以上</td><td>可全班施測</td></tr>
+          </tbody>
+        </table>
+        <div class="warn-box">🗝️ 施測順序固定：VMI → 視知覺 → 動作協調；三個分測驗各自對照常模計分</div>
+      </div>
+
+      <!-- VMI -->
+      <div class="ref-panel" id="ref-vmi">
+        <div class="ref-h2">VMI 分測驗 — 視覺動作統整</div>
+        <div class="ref-h3">起始題規則</div>
+        <table class="ref-table">
+          <tbody>
+            <tr><td style="font-weight:600;width:160px;">5 歲以上</td><td>從第 4 頁開始施測</td></tr>
+            <tr><td style="font-weight:600;">未滿 5 歲</td><td>從第 2 頁開始施測</td></tr>
+            <tr><td style="font-weight:600;">特殊情況</td><td>若兒童不明白指導語，或第 7、8、9 項不成功，再翻到第 2 頁重新解釋</td></tr>
+          </tbody>
+        </table>
+        <div class="ref-h3">評分規則</div>
+        <table class="ref-table">
+          <tbody>
+            <tr><td style="font-weight:600;width:160px;">計分方式</td><td>每題 1 分，總分 30 分</td></tr>
+            <tr><td style="font-weight:600;">基礎水準</td><td>若兒童能通過第 7、8、9 題，則 1–6 題視為通過（自動給分）</td></tr>
+            <tr><td style="font-weight:600;">停止規則</td><td>連續 3 題錯誤之後所畫的圖形不予評分</td></tr>
+            <tr><td style="font-weight:600;">重複作答</td><td>9 歲以下：只評第一次畫的圖形；9 歲以上：若先用細線打草稿再描粗，可予通過</td></tr>
+          </tbody>
+        </table>
+        <div class="warn-box">⚠️ VMI 不計時，讓孩童依自己的速度完成</div>
+      </div>
+
+      <!-- VP -->
+      <div class="ref-panel" id="ref-vp">
+        <div class="ref-h2">視知覺分測驗</div>
+        <table class="ref-table">
+          <tbody>
+            <tr><td style="font-weight:600;width:160px;">施測時機</td><td>在 VMI 測驗施測之後進行</td></tr>
+            <tr><td style="font-weight:600;">計時方式</td><td>從第 7 題開始計時，總時間 3 分鐘</td></tr>
+            <tr><td style="font-weight:600;">1–3 題</td><td>為指認部位，不計時</td></tr>
+            <tr><td style="font-weight:600;">5 歲以上</td><td>若認為兒童可自行勾選，讓其在第一個選擇旁打勾；否則拒絕自行圈選</td></tr>
+            <tr><td style="font-weight:600;">5 歲以下</td><td>不須用鉛筆或原子筆施測</td></tr>
+          </tbody>
+        </table>
+        <div class="ref-h3">評分規則</div>
+        <table class="ref-table">
+          <tbody>
+            <tr><td style="font-weight:600;width:160px;">計分方式</td><td>從第一題開始，答對一題給一分，最高 30 分</td></tr>
+            <tr><td style="font-weight:600;">停止規則</td><td>連續 3 題答錯或時間到停止</td></tr>
+            <tr><td style="font-weight:600;">答案選取</td><td>除兒童明確改正外，只評其第一個選答的答案</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MC -->
+      <div class="ref-panel" id="ref-mc">
+        <div class="ref-h2">動作協調分測驗</div>
+        <table class="ref-table">
+          <tbody>
+            <tr><td style="font-weight:600;width:160px;">施測時機</td><td>在 VMI 測驗施測之後進行</td></tr>
+            <tr><td style="font-weight:600;">計時方式</td><td>從第 7 題開始計時，總時間 5 分鐘</td></tr>
+            <tr><td style="font-weight:600;">計時指導語</td><td>「繼續做。要細心的畫，不要匆忙。要依順序描圖，不要漏掉任何一個圖」</td></tr>
+            <tr><td style="font-weight:600;">第二頁說明</td><td>「有黑點的圖從黑點開始；沒有黑點的圖自己決定從哪裡開始。在路的裡面畫，要畫得像上面的小範圖一樣」</td></tr>
+            <tr><td style="font-weight:600;">重要限制</td><td>不可以擦改</td></tr>
+            <tr><td style="font-weight:600;">停止規則</td><td>連續 3 題畫錯，不須停止，可以繼續畫</td></tr>
+          </tbody>
+        </table>
+        <div class="ref-h3">評分重點</div>
+        <table class="ref-table">
+          <tbody>
+            <tr><td style="font-weight:600;width:160px;">線段要求</td><td>各線段不需要完全連到點，但每段路徑都要畫到</td></tr>
+            <tr><td style="font-weight:600;">立體圖形</td><td>要能看出是立體示意圖</td></tr>
+          </tbody>
+        </table>
+        <div class="warn-box">⚠️ 動作協調不可擦改，這點與 VMI 不同，施測前務必提醒孩童</div>
+      </div>
+
+      <!-- Scoring -->
+      <div class="ref-panel" id="ref-score">
+        <div class="ref-h2">評分與結果解釋</div>
+        <div class="ref-h3">分數轉換流程</div>
+        <table class="ref-table">
+          <thead><tr><th>步驟</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><span class="score-pill pill-p">Step 1</span></td><td>計算各分測驗的原始分數（Raw Score）</td></tr>
+            <tr><td><span class="score-pill pill-p">Step 2</span></td><td>對照常模表，換算標準分數（Standard Score）</td></tr>
+            <tr><td><span class="score-pill pill-p">Step 3</span></td><td>標準分數對照百分位數（P.209）</td></tr>
+            <tr><td><span class="score-pill pill-p">Step 4</span></td><td>依需要可換算年齡當量（P.178）</td></tr>
+          </tbody>
+        </table>
+        <div class="ref-h3">結果解釋</div>
+        <table class="ref-table">
+          <thead><tr><th>表現</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td><span class="score-pill pill-g">符合年齡</span></td><td>標準分數在平均值範圍內，動作視覺整合發展正常</td></tr>
+            <tr><td><span class="score-pill" style="background:var(--amber-light);color:var(--amber-dark);">低於平均值</span></td><td>標準分數低於平均值，可能需要介入；結合臨床觀察進一步評估</td></tr>
+          </tbody>
+        </table>
+        <div class="ref-h3">計時整理</div>
+        <table class="ref-table">
+          <thead><tr><th>分測驗</th><th>計時</th><th>從哪題開始計時</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600;">VMI</td><td><span class="score-pill pill-g">不計時</span></td><td>—</td></tr>
+            <tr><td style="font-weight:600;">視知覺</td><td><span class="score-pill pill-a">3 分鐘</span></td><td>第 7 題</td></tr>
+            <tr><td style="font-weight:600;">動作協調</td><td><span class="score-pill pill-a">5 分鐘</span></td><td>第 7 題</td></tr>
+          </tbody>
+        </table>
+        <div class="warn-box">🗝️ VMI 不計時；視知覺 3 分鐘；動作協調 5 分鐘——這是常考重點！</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">臺北醫學大學附設醫院職能治療組 · 本工具僅供學習使用</footer>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwT2xRMQ2ifKhOrv0tU4noqdWVi-Nvvolv2gxOP0e-1QDYBSkf8iHl9a9jjOKvJ8v--/exec';
+let studentName = '';
+
+function switchMain(id, btn) {
+  document.querySelectorAll('.section-panel').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(e => e.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  else { const map={video:0,quiz:1,ref:2}; document.querySelectorAll('.nav-btn')[map[id]]?.classList.add('active'); }
+}
+function switchRef(id, btn) {
+  document.querySelectorAll('.ref-panel').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.ref-tab').forEach(e => e.classList.remove('active'));
+  document.getElementById('ref-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+const allQuestions = {
+  admin: [
+    { cat:'施測規則 — VMI', text:'VMI 起始題', scenario:'施測一位 4 歲 8 個月的孩童（未滿 5 歲）。請問 VMI 分測驗應從第幾頁開始施測？', opts:['從第 2 頁開始','從第 4 頁開始','從第 1 頁開始','從第 7 頁開始'], ans:0, fc:'答對！未滿 5 歲從第 2 頁開始施測；5 歲以上（含）才從第 4 頁開始。', fw:'答案是從第 2 頁開始。起始頁規則：未滿 5 歲 → 第 2 頁；5 歲以上 → 第 4 頁。' },
+    { cat:'施測規則 — 視知覺', text:'視知覺計時規則', scenario:'施測視知覺分測驗，孩童正在作答第 5 題，治療師還沒有開始計時。請問這是否正確？', opts:['正確，第 5 題不需要計時','錯誤，應從第 1 題開始計時','正確，第 7 題才開始計時','錯誤，應從第 4 題開始計時'], ans:2, fc:'答對！視知覺分測驗從第 7 題才開始計時，共 3 分鐘。第 1–6 題不計時。', fw:'答案是正確，第 7 題才開始計時。視知覺計時規則：第 7 題開始計時，總時間 3 分鐘。' },
+    { cat:'施測規則 — 動作協調', text:'動作協調重要限制', scenario:'孩童在動作協調分測驗中畫錯了一條線，想用橡皮擦擦掉重畫。治療師應如何處理？', opts:['允許，VMI 系列測驗都可以擦改','不允許，動作協調分測驗不可擦改','允許，但只能擦一次','視錯誤嚴重程度決定'], ans:1, fc:'答對！動作協調分測驗不可以擦改，這是和 VMI 分測驗不同的重要規定。', fw:'答案是不允許。動作協調分測驗明確規定不可以擦改，施測前需提醒孩童。' },
+    { cat:'施測規則 — 動作協調', text:'動作協調計時', scenario:'動作協調分測驗的計時時間是多少？從哪一題開始計時？', opts:['3 分鐘，從第 1 題','5 分鐘，從第 7 題','3 分鐘，從第 7 題','5 分鐘，從第 4 題'], ans:1, fc:'答對！動作協調從第 7 題開始計時，總時間 5 分鐘。記憶：視知覺 3 分鐘；動作協調 5 分鐘。', fw:'答案是 5 分鐘，從第 7 題。視知覺 = 3 分鐘；動作協調 = 5 分鐘，兩者都從第 7 題開始計時。' },
+  ],
+  scoring: [
+    { cat:'評分 — VMI', text:'VMI 基礎水準計分', scenario:'一位孩童的 VMI 施測結果：第 7、8、9 題均通過。但治療師未施測第 1–6 題（從第 4 頁開始）。請問第 1–6 題應如何計分？', opts:['1–6 題全部給 0 分','1–6 題視為通過，全部給分','需要補測第 1–6 題才能計分','只計算第 7 題以後的分數'], ans:1, fc:'答對！這是 VMI 的「基礎水準（basal）」規定：若孩童能通過第 7、8、9 題，則 1–6 題視為通過，自動給分。', fw:'答案是 1–6 題視為通過。基礎水準原則：通過第 7、8、9 題 → 1–6 題自動給分，因為難度更低的題目一定能通過。' },
+    { cat:'評分 — VMI', text:'VMI 停止規則', scenario:'孩童在 VMI 分測驗中，第 15、16、17 題連續三題畫錯。第 18、19 題孩童仍繼續畫了，且畫對了。請問第 18、19 題應如何計分？', opts:['給分，因為畫對了','不給分，連續 3 題錯後不予計分','給分，停止規則只適用於視知覺','需重新從第 15 題開始評估'], ans:1, fc:'答對！VMI 規定：連續 3 題錯誤之後所畫的圖形，不予評分，即使後面畫對也不計分。', fw:'答案是不給分。VMI 停止計分規則：連續 3 題錯誤後，之後的圖形不予評分（但孩童可繼續畫）。' },
+    { cat:'評分 — 視知覺', text:'視知覺答案選取', scenario:'孩童在視知覺分測驗先選了 B 選項，後來又改選 C 選項，但沒有明確說出「我要改」。治療師應計哪個答案？', opts:['計 B（第一個選答）','計 C（最後選答）','兩個都不計，請孩童重新作答','由治療師判斷哪個更接近正確'], ans:0, fc:'答對！視知覺規定：除兒童明確改正外，只評其第一個選答的答案。沒有明確表示改答，就計第一個。', fw:'答案是計 B（第一個選答）。視知覺計分原則：只評第一個選答，除非孩童明確表示要改答。' },
+    { cat:'評分 — 動作協調', text:'動作協調線段要求', scenario:'孩童在動作協調分測驗中描繪路徑圖，線段畫到接近終點但沒有完全碰到點，線段中間沒有斷掉。請問這題是否通過？', opts:['不通過，線段必須完全連到點','通過，各線段不需要完全連到點','無法判斷，需看其他標準','不通過，只要沒碰到點就算錯'], ans:1, fc:'答對！動作協調規定：各線段不需要完全連到點，重點是每段路徑都要畫到。', fw:'答案是通過。動作協調評分：不需要完全連到點，但每段路徑都要畫到。' },
+  ],
+  result: [
+    { cat:'結果解釋', text:'三個分測驗計時', scenario:'治療師想快速確認三個分測驗的計時規定。以下哪個選項完全正確？', opts:['VMI 不計時；視知覺 5 分鐘；動作協調 3 分鐘','VMI 3 分鐘；視知覺 3 分鐘；動作協調 5 分鐘','VMI 不計時；視知覺 3 分鐘；動作協調 5 分鐘','VMI 不計時；視知覺 5 分鐘；動作協調 5 分鐘'], ans:2, fc:'答對！VMI 不計時；視知覺 3 分鐘；動作協調 5 分鐘——這是常考的重點！', fw:'答案是：VMI 不計時；視知覺 3 分鐘；動作協調 5 分鐘。三個分測驗的計時不同，需要牢記。' },
+    { cat:'結果解釋', text:'分數轉換流程', scenario:'治療師完成施測，記錄了孩童的 VMI 原始分數為 18 分，孩童年齡 3 歲 6 個月。下一步應該怎麼做？', opts:['直接判斷孩童表現正常或異常','對照常模表換算標準分數','直接換算成百分位數','計算三個分測驗的總分'], ans:1, fc:'答對！正確流程：原始分數 → 對照常模表 → 換算標準分數 → 再對照百分位數。例：18分+3歲6個月 → 標準分數 144。', fw:'答案是對照常模表換算標準分數。流程：原始分數 → 常模表 → 標準分數 → 百分位數 → 判斷結果。' },
+    { cat:'結果解釋', text:'結果判斷', scenario:'一位孩童的 VMI 標準分數低於同年齡平均值。請問這代表什麼？', opts:['動作視覺整合發展正常，不需介入','動作視覺整合可能有困難，需考慮介入','標準分數低於平均值屬於正常範圍','需要重新施測確認'], ans:1, fc:'答對！標準分數低於平均值表示表現低於同年齡，可能需要介入，應結合臨床觀察進一步評估。', fw:'答案是可能需要介入。VMI 結果：符合年齡 = 正常；低於平均值 = 可能需要介入，建議進一步評估。' },
+    { cat:'結果解釋', text:'施測順序', scenario:'以下關於 Beery VMI 三個分測驗的施測順序，哪個是正確的？', opts:['視知覺 → VMI → 動作協調','VMI → 動作協調 → 視知覺','VMI → 視知覺 → 動作協調','動作協調 → 視知覺 → VMI'], ans:2, fc:'答對！正確施測順序：VMI（先）→ 視知覺 → 動作協調（後）。視知覺和動作協調都要在 VMI 之後施測。', fw:'答案是 VMI → 視知覺 → 動作協調。視知覺和動作協調都規定要在 VMI 之後進行。' },
+  ]
+};
+
+let shuffled = [], qIdx = 0, score = 0, answered = false;
+function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function startQuiz(type) {
+  const name = document.getElementById('studentName').value.trim();
+  if (!name) { alert('請先輸入您的姓名！'); return; }
+  studentName = name;
+  let pool = [];
+  if (type === 'all') pool = [...allQuestions.admin, ...allQuestions.scoring, ...allQuestions.result];
+  else pool = [...allQuestions[type]];
+  shuffled = shuffle(pool);
+  qIdx = 0; score = 0;
+  document.getElementById('nameCard').style.display = 'none';
+  document.getElementById('quizCard').style.display = 'block';
+  document.getElementById('scoreScreen').style.display = 'none';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  if (qIdx >= shuffled.length) { showScore(); return; }
+  const q = shuffled[qIdx];
+  answered = false;
+  document.getElementById('qProgress').style.width = (qIdx/shuffled.length*100)+'%';
+  document.getElementById('qNum').textContent = '題目 '+(qIdx+1)+' / '+shuffled.length;
+  document.getElementById('qBadge').textContent = q.cat;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('qScenario').textContent = q.scenario;
+  const grid = document.getElementById('qOptions');
+  grid.innerHTML = '';
+  q.opts.forEach((o,i) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.innerHTML = '<div class="ol">'+o+'</div>';
+    b.onclick = () => selectAnswer(i, q);
+    grid.appendChild(b);
+  });
+  const fb = document.getElementById('qFeedback');
+  fb.style.display = 'none'; fb.className = 'feedback';
+  document.getElementById('qNextBtn').style.display = 'none';
+}
+
+function selectAnswer(chosen, q) {
+  if (answered) return;
+  answered = true;
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+  const ok = chosen === q.ans;
+  if (ok) { score++; btns[chosen].className = 'opt-btn correct'; }
+  else { btns[chosen].className = 'opt-btn wrong'; btns[q.ans].className = 'opt-btn reveal'; }
+  const fb = document.getElementById('qFeedback');
+  fb.style.display = 'block'; fb.className = 'feedback '+(ok?'correct':'wrong');
+  document.getElementById('qFbTitle').textContent = ok ? '答對了！' : '答錯了';
+  document.getElementById('qFbBody').textContent = ok ? q.fc : q.fw;
+  const nb = document.getElementById('qNextBtn');
+  nb.style.display = 'block';
+  nb.textContent = qIdx < shuffled.length-1 ? '下一題' : '查看成績';
+}
+
+document.getElementById('qNextBtn').onclick = () => { qIdx++; renderQuestion(); };
+
+function showScore() {
+  document.getElementById('quizCard').style.display = 'none';
+  const ss = document.getElementById('scoreScreen');
+  ss.style.display = 'block';
+  const pct = Math.round(score/shuffled.length*100);
+  document.getElementById('scoreBig').textContent = pct+'%';
+  document.getElementById('scoreLabel').textContent = pct===100?'全部答對，施測能力優秀！':pct>=80?'表現很好，再複習幾個細節吧。':pct>=60?'有進步空間，建議重複練習。':'建議重新複習施測規則後再練習。';
+  document.getElementById('scoreNameLabel').textContent = studentName + ' 的成績';
+  document.getElementById('scCorrect').textContent = score;
+  document.getElementById('scWrong').textContent = shuffled.length-score;
+  document.getElementById('scTotal').textContent = shuffled.length;
+  submitScore(studentName, pct, score, shuffled.length-score, shuffled.length);
+}
+
+function submitScore(name, pct, correct, wrong, total) {
+  const status = document.getElementById('submitStatus');
+  status.textContent = '成績送出中...';
+  fetch(SCRIPT_URL, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, score:pct, correct, wrong, total})
+  }).then(() => {
+    status.textContent = '✓ 成績已送出給老師';
+    status.style.color = 'var(--green)';
+  }).catch(() => {
+    status.textContent = '⚠ 成績送出失敗，請告知老師';
+    status.style.color = 'var(--red)';
+  });
+}
+
+function restartQuiz() {
+  qIdx=0; score=0; studentName='';
+  document.getElementById('studentName').value='';
+  document.getElementById('nameCard').style.display='block';
+  document.getElementById('quizCard').style.display='none';
+  document.getElementById('scoreScreen').style.display='none';
+}
+</script>
+</body>
+</html>
